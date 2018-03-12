@@ -180,6 +180,8 @@ func (c *client) clientAndType(resource string) (rest.Interface, interface{}, er
 		return c.client.CoreV1().RESTClient(), &apiv1.Service{}, nil
 	case "nodes":
 		return c.client.CoreV1().RESTClient(), &apiv1.Node{}, nil
+	case "persistentvolumeclaim":
+		return c.client.CoreV1().RESTClient(), &apiv1.PersistentVolumeClaim{}, nil
 	case "namespaces":
 		return c.client.CoreV1().RESTClient(), &apiv1.Namespace{}, nil
 	case "deployments":
