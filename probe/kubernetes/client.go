@@ -37,6 +37,7 @@ type Client interface {
 	WalkStatefulSets(f func(StatefulSet) error) error
 	WalkCronJobs(f func(CronJob) error) error
 	WalkNamespaces(f func(NamespaceResource) error) error
+	WalkPersistentVolumeClaim(f func(PersistentVolumeClaim) error) error
 
 	WatchPods(f func(Event, Pod))
 
@@ -47,17 +48,18 @@ type Client interface {
 }
 
 type client struct {
-	quit             chan struct{}
-	client           *kubernetes.Clientset
-	podStore         cache.Store
-	serviceStore     cache.Store
-	deploymentStore  cache.Store
-	daemonSetStore   cache.Store
-	statefulSetStore cache.Store
-	jobStore         cache.Store
-	cronJobStore     cache.Store
-	nodeStore        cache.Store
-	namespaceStore   cache.Store
+	quit                       chan struct{}
+	client                     *kubernetes.Clientset
+	podStore                   cache.Store
+	serviceStore               cache.Store
+	deploymentStore            cache.Store
+	daemonSetStore             cache.Store
+	statefulSetStore           cache.Store
+	jobStore                   cache.Store
+	cronJobStore               cache.Store
+	nodeStore                  cache.Store
+	namespaceStore             cache.Store
+	persistentVolumeClaimStore cache.Store
 
 	podWatchesMutex sync.Mutex
 	podWatches      []func(Event, Pod)
@@ -142,7 +144,7 @@ func NewClient(config ClientConfig) (Client, error) {
 	result.jobStore = result.setupStore("jobs")
 	result.statefulSetStore = result.setupStore("statefulsets")
 	result.cronJobStore = result.setupStore("cronjobs")
-
+	result.persistentVolumeClaimStore = result.setupStore("persistentvolumeclaim")
 	return result, nil
 }
 
@@ -307,6 +309,20 @@ func (c *client) WalkStatefulSets(f func(StatefulSet) error) error {
 	for _, m := range c.statefulSetStore.List() {
 		s := m.(*apiappsv1beta1.StatefulSet)
 		if err := f(NewStatefulSet(s)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// WalkPersistentVolumeClaim calls f for each PVC
+func (c *client) WalkPersistentVolumeClaim(f func(PersistentVolumeClaim) error) error {
+	if c.persistentVolumeClaimStore == nil {
+		return nil
+	}
+	for _, m := range c.persistentVolumeClaimStore.List() {
+		p := m.(*apiv1.PersistentVolumeClaim)
+		if err := f(NewPVC(p)); err != nil {
 			return err
 		}
 	}

@@ -64,22 +64,23 @@ type NodeSummary struct {
 }
 
 var renderers = map[string]func(BasicNodeSummary, report.Node) BasicNodeSummary{
-	render.Pseudo:         pseudoNodeSummary,
-	report.Process:        processNodeSummary,
-	report.Container:      containerNodeSummary,
-	report.ContainerImage: containerImageNodeSummary,
-	report.Pod:            podNodeSummary,
-	report.Service:        podGroupNodeSummary,
-	report.Deployment:     podGroupNodeSummary,
-	report.DaemonSet:      podGroupNodeSummary,
-	report.StatefulSet:    podGroupNodeSummary,
-	report.CronJob:        podGroupNodeSummary,
-	report.ECSTask:        ecsTaskNodeSummary,
-	report.ECSService:     ecsServiceNodeSummary,
-	report.SwarmService:   swarmServiceNodeSummary,
-	report.Host:           hostNodeSummary,
-	report.Overlay:        weaveNodeSummary,
-	report.Endpoint:       nil, // Do not render
+	render.Pseudo:                pseudoNodeSummary,
+	report.Process:               processNodeSummary,
+	report.Container:             containerNodeSummary,
+	report.ContainerImage:        containerImageNodeSummary,
+	report.Pod:                   podNodeSummary,
+	report.Service:               podGroupNodeSummary,
+	report.Deployment:            podGroupNodeSummary,
+	report.DaemonSet:             podGroupNodeSummary,
+	report.StatefulSet:           podGroupNodeSummary,
+	report.CronJob:               podGroupNodeSummary,
+	report.ECSTask:               ecsTaskNodeSummary,
+	report.ECSService:            ecsServiceNodeSummary,
+	report.SwarmService:          swarmServiceNodeSummary,
+	report.Host:                  hostNodeSummary,
+	report.PersistentVolumeClaim: persistentVolumeClaimNodeSummary,
+	report.Overlay:               weaveNodeSummary,
+	report.Endpoint:              nil, // Do not render
 }
 
 // For each report.Topology, map to a 'primary' API topology. This can then be used in a variety of places.
@@ -368,6 +369,14 @@ func weaveNodeSummary(base BasicNodeSummary, n report.Node) BasicNodeSummary {
 		base.Label = peerName
 	}
 	base.LabelMinor = peerName
+	return base
+}
+
+func persistentVolumeClaimNodeSummary(base BasicNodeSummary, n report.Node) BasicNodeSummary {
+
+	if base.Label == "" {
+		base.Label, _ = report.ParsePersistentVolumeClaimNodeID(n.ID)
+	}
 	return base
 }
 

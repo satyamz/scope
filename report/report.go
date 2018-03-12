@@ -12,23 +12,24 @@ import (
 
 // Names of the various topologies.
 const (
-	Endpoint       = "endpoint"
-	Process        = "process"
-	Container      = "container"
-	Pod            = "pod"
-	Service        = "service"
-	Deployment     = "deployment"
-	ReplicaSet     = "replica_set"
-	DaemonSet      = "daemon_set"
-	StatefulSet    = "stateful_set"
-	CronJob        = "cron_job"
-	Namespace      = "namespace"
-	ContainerImage = "container_image"
-	Host           = "host"
-	Overlay        = "overlay"
-	ECSService     = "ecs_service"
-	ECSTask        = "ecs_task"
-	SwarmService   = "swarm_service"
+	Endpoint              = "endpoint"
+	Process               = "process"
+	Container             = "container"
+	Pod                   = "pod"
+	Service               = "service"
+	Deployment            = "deployment"
+	ReplicaSet            = "replica_set"
+	DaemonSet             = "daemon_set"
+	StatefulSet           = "stateful_set"
+	CronJob               = "cron_job"
+	Namespace             = "namespace"
+	ContainerImage        = "container_image"
+	Host                  = "host"
+	Overlay               = "overlay"
+	ECSService            = "ecs_service"
+	ECSTask               = "ecs_task"
+	SwarmService          = "swarm_service"
+	PersistentVolumeClaim = "persistentvolumeclaim"
 
 	// Shapes used for different nodes
 	Circle   = "circle"
@@ -121,6 +122,10 @@ type Report struct {
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
 	Namespace Topology
+
+	// PersistentVolumeClaim represebt all kubernetes PersistentVolumeClaims on hosts running probes.
+	// Metadata includes things lile PVC id, pvc name etc. Edges are not present
+	PersistentVolumeClaim Topology
 
 	// ContainerImages nodes represent all Docker containers images on
 	// hosts running probes. Metadata includes things like image id, name etc.
