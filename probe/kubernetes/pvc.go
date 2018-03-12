@@ -28,7 +28,7 @@ func NewPVC(p *apiv1.PersistentVolumeClaim) PersistentVolumeClaim {
 
 // GetNode returns PVC as Node
 func (p *persistentVolumeClaim) GetNode(probeID string) report.Node {
-	return p.MetaNode(report.MakeDeploymentNodeID(p.UID())).WithLatests(map[string]string{
+	return p.MetaNode(report.MakePersistentVolumeClaimNodeID(p.UID())).WithLatests(map[string]string{
 		report.ControlProbeID: probeID,
 		NodeType:              "PVC",
 		Namespace:             p.GetNamespace(),

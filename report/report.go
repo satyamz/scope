@@ -349,6 +349,8 @@ func (r *Report) topology(name string) *Topology {
 		return &r.ECSService
 	case SwarmService:
 		return &r.SwarmService
+	case PersistentVolumeClaim:
+		return &r.PersistentVolumeClaim
 	}
 	return nil
 }
