@@ -144,7 +144,7 @@ func NewClient(config ClientConfig) (Client, error) {
 	result.jobStore = result.setupStore("jobs")
 	result.statefulSetStore = result.setupStore("statefulsets")
 	result.cronJobStore = result.setupStore("cronjobs")
-	result.persistentVolumeClaimStore = result.setupStore("persistentvolumeclaim")
+	result.persistentVolumeClaimStore = result.setupStore("persistentvolumeclaims")
 	return result, nil
 }
 
@@ -180,7 +180,7 @@ func (c *client) clientAndType(resource string) (rest.Interface, interface{}, er
 		return c.client.CoreV1().RESTClient(), &apiv1.Service{}, nil
 	case "nodes":
 		return c.client.CoreV1().RESTClient(), &apiv1.Node{}, nil
-	case "persistentvolumeclaim":
+	case "persistentvolumeclaims":
 		return c.client.CoreV1().RESTClient(), &apiv1.PersistentVolumeClaim{}, nil
 	case "namespaces":
 		return c.client.CoreV1().RESTClient(), &apiv1.Namespace{}, nil
