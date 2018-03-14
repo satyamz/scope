@@ -270,7 +270,7 @@ func (r *Reporter) Report() (report.Report, error) {
 	persistentVolumeClaimTopology, _, err := r.persistentVolumeClaimTopology(r.probeID)
 	if err != nil {
 		return result, err
-	} 
+	}
 	result.Pod = result.Pod.Merge(podTopology)
 	result.Service = result.Service.Merge(serviceTopology)
 	result.Host = result.Host.Merge(hostTopology)
@@ -523,6 +523,7 @@ func (r *Reporter) namespaceTopology() (report.Topology, error) {
 }
 
 func (r *Reporter) persistentVolumeClaimTopology(probeID string) (report.Topology, []PersistentVolumeClaim, error) {
+	//TODO: Need to improve logic for topology.
 	var (
 		result = report.MakeTopology().
 			WithMetadataTemplates(PersistentVolumeClaimMetadataTemplates).
@@ -530,7 +531,6 @@ func (r *Reporter) persistentVolumeClaimTopology(probeID string) (report.Topolog
 			WithTableTemplates(TableTemplates)
 		pvcs = []PersistentVolumeClaim{}
 	)
-	// result.Controls.AddControls(ScalingControls)
 
 	err := r.client.WalkPersistentVolumeClaim(func(p PersistentVolumeClaim) error {
 		result.AddNode(p.GetNode(probeID))

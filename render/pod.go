@@ -91,31 +91,6 @@ var KubeControllerRenderer = ConditionalRenderer(renderKubernetesTopologies,
 	),
 )
 
-//PVCRenderer is a Renderer which combines all the 'pvc' topologies.
-var PVCRenderer = Memoise(ConditionalRenderer(renderKubernetesTopologies,
-	MakeFilter(
-		func(n report.Node) bool {
-			state, ok := n.Latest.Lookup(kubernetes.State)
-			return (!ok || state != kubernetes.StateDeleted)
-		},
-		MakeReduce(
-			PropagateSingleMetrics(report.PersistentVolumeClaim,
-				MakeMap(
-					Map2Parent([]string{report.Pod}, UnmanagedID),
-					MakeFilter(
-						ComposeFilterFuncs(
-							IsRunning,
-							Complement(isPauseContainer),
-						),
-						ContainerWithImageNameRenderer,
-					),
-				),
-			),
-			ConnectionJoin(MapPod2IP, report.Pod),
-		),
-	),
-))
-
 // renderParents produces a 'standard' renderer for mapping from some child topology to some parent topologies,
 // by taking a child renderer, mapping to parents, propagating single metrics, and joining with full parent topology.
 // Other options are as per Map2Parent.

@@ -64,6 +64,7 @@ var topologyNames = []string{
 	ECSTask,
 	ECSService,
 	SwarmService,
+	PersistentVolumeClaim,
 }
 
 // Report is the core data type. It's produced by probes, and consumed and
@@ -248,6 +249,9 @@ func MakeReport() Report {
 		SwarmService: MakeTopology().
 			WithShape(Heptagon).
 			WithLabel("service", "services"),
+		PersistentVolumeClaim: MakeTopology().
+			WithShape(Heptagon).
+			WithLabel("persistentvolumeclaim", "persistentvolumeclaims"),
 
 		DNS: DNSRecords{},
 

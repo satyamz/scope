@@ -85,19 +85,20 @@ var renderers = map[string]func(BasicNodeSummary, report.Node) BasicNodeSummary{
 
 // For each report.Topology, map to a 'primary' API topology. This can then be used in a variety of places.
 var primaryAPITopology = map[string]string{
-	report.Process:        "processes",
-	report.Container:      "containers",
-	report.ContainerImage: "containers-by-image",
-	report.Pod:            "pods",
-	report.Deployment:     "kube-controllers",
-	report.DaemonSet:      "kube-controllers",
-	report.StatefulSet:    "kube-controllers",
-	report.CronJob:        "kube-controllers",
-	report.Service:        "services",
-	report.ECSTask:        "ecs-tasks",
-	report.ECSService:     "ecs-services",
-	report.SwarmService:   "swarm-services",
-	report.Host:           "hosts",
+	report.Process:               "processes",
+	report.Container:             "containers",
+	report.ContainerImage:        "containers-by-image",
+	report.Pod:                   "pods",
+	report.Deployment:            "kube-controllers",
+	report.DaemonSet:             "kube-controllers",
+	report.StatefulSet:           "kube-controllers",
+	report.CronJob:               "kube-controllers",
+	report.Service:               "services",
+	report.ECSTask:               "ecs-tasks",
+	report.ECSService:            "ecs-services",
+	report.SwarmService:          "swarm-services",
+	report.Host:                  "hosts",
+	report.PersistentVolumeClaim: "persistentvolumeclaim",
 }
 
 // MakeBasicNodeSummary returns a basic summary of a node, if
@@ -373,10 +374,8 @@ func weaveNodeSummary(base BasicNodeSummary, n report.Node) BasicNodeSummary {
 }
 
 func persistentVolumeClaimNodeSummary(base BasicNodeSummary, n report.Node) BasicNodeSummary {
-
-	if base.Label == "" {
-		base.Label, _ = report.ParsePersistentVolumeClaimNodeID(n.ID)
-	}
+	// TODO: Need to improve more and add Minor label
+	base = addKubernetesLabelAndRank(base, n)
 	return base
 }
 
