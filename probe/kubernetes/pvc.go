@@ -26,6 +26,14 @@ func NewPVC(p *apiv1.PersistentVolumeClaim) PersistentVolumeClaim {
 	return &persistentVolumeClaim{PersistentVolumeClaim: p, Meta: meta{p.ObjectMeta}}
 }
 
+func (p persistentVolumeClaim) getStorageClass() string {
+	storageClassName := ""
+	if p.Spec.StorageClassName != nil {
+		storageClassName = *p.Spec.StorageClassName
+	}
+	return storageClassName
+}
+
 // GetNode returns PVC as Node
 func (p *persistentVolumeClaim) GetNode(probeID string) report.Node {
 	return p.MetaNode(report.MakePersistentVolumeClaimNodeID(p.UID())).WithLatests(map[string]string{
@@ -35,6 +43,7 @@ func (p *persistentVolumeClaim) GetNode(probeID string) report.Node {
 		Status:                string(p.Status.Phase),
 		VolumeName:            p.Spec.VolumeName,
 		AccessModes:           string(p.Spec.AccessModes[0]),
+		StorageClassName:      p.getStorageClass(),
 	})
 }
 
@@ -46,4 +55,3 @@ func (p *persistentVolumeClaim) Selector() (labels.Selector, error) {
 	}
 	return selector, nil
 }
-

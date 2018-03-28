@@ -251,6 +251,26 @@ func (ret *joinResults) rewriteAdjacency(outID string, adjacency report.IDList) 
 	ret.nodes[outID] = out
 }
 
+func (ret *joinResults) storageAdjacency(outID string, adjacency string) {
+	out := ret.nodes[outID]
+	out.Adjacency = out.Adjacency.Add(adjacency)
+	ret.nodes[outID] = out
+}
+
+func (ret *joinResults) storageResult(input Nodes) Nodes {
+	for _, n := range input.Nodes {
+		outID, ok := ret.mapped[n.ID]
+		if !ok {
+			continue
+		}
+		ret.storageAdjacency(outID, n.ID)
+		for _, outID := range ret.multi[n.ID] {
+			ret.rewriteAdjacency(outID, n.Adjacency)
+		}
+	}
+	return Nodes{Nodes: ret.nodes}
+}
+
 // ResetCache blows away the rendered node cache, and known service
 // cache.
 func ResetCache() {
