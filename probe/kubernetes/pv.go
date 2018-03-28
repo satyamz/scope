@@ -28,5 +28,7 @@ func (p *persistentVolume) GetNode(probeID string) report.Node {
 		report.ControlProbeID: probeID,
 		NodeType:              "PV",
 		Namespace:             p.GetNamespace(),
+		Name:                  p.GetName(),
+		PersistentVolumeClaimName: p.Spec.ClaimRef.Name,
 	})
 }

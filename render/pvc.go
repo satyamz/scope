@@ -1,37 +1,48 @@
 package render
 
 import (
+	"github.com/weaveworks/scope/probe/kubernetes"
 	"github.com/weaveworks/scope/report"
 )
 
-// PVCRenderer to create a renderer for PVC objects.
-var PVCRenderer = MakeReduce(
+var PVCRenderer = Memoise(MakeReduce(ConnectionStorageJoin(MapPVC2PVName, report.PersistentVolume)))
 
-	MapEndpoints(endpoint2PVC, report.PersistentVolumeClaim),
-	MapEndpoints(endpoint2PV, report.PersistentVolume),
-	MapEndpoints(endpoint2StorageClass, report.StorageClass),
-)
-
-// endpoint2PVC returns pvc node ID
-func endpoint2PVC(n report.Node) string {
-	if pvcNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeClaimNodeID(n.ID)); ok {
-		return pvcNodeID
-	}
-	return ""
+func ConnectionStorageJoin(toPV func(report.Node) string, topology string) Renderer {
+	return connectionStorageJoin{toPV: toPV, topology: topology}
 }
 
-// endpoint2PV returns pv node ID
-func endpoint2PV(n report.Node) string {
-	if pvNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeNodeID(n.ID)); ok {
-		return pvNodeID
-	}
-	return ""
+type connectionStorageJoin struct {
+	toPV     func(report.Node) string
+	topology string
 }
 
-// endpoint2StorageClass returns StorageClass node ID
-func endpoint2StorageClass(n report.Node) string {
-	if storageclassNodeID, ok := n.Latest.Lookup(report.MakeStorageClassNodeID(n.ID)); ok {
-		return storageclassNodeID
+func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
+	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes //All PV nodes
+
+	var pvNodes = map[string]string{} // Map to store information
+	for _, n := range inputNodes {
+		for _, pvcName := range c.toPV(n) {
+			pvNodes[string(pvcName)] = n.ID
+		}
 	}
-	return ""
+	return MapStorageEndpoints(
+		func(m report.Node) string {
+
+			//Function to get PV id for PVCName in PVC Node in argument
+			pvName, ok := m.Latest.Lookup(kubernetes.Name)
+			if !ok {
+				return "" //pvName not found then return empty id
+			}
+			id := pvNodes[pvName] // Return PVC ID
+			return id
+		}, c.topology).Render(rpt)
+}
+
+func MapPVC2PVName(m report.Node) string {
+	//return PVName associated with the given PVC Node
+	pvcName, ok := m.Latest.Lookup(kubernetes.PersistentVolumeClaimName)
+	if !ok {
+		pvcName = ""
+	}
+	return pvcName
 }
