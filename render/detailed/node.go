@@ -206,6 +206,13 @@ var nodeSummaryGroupSpecs = []struct {
 			Columns: []Column{},
 		},
 	},
+	{
+		topologyID: report.ApplicationPod,
+		NodeSummaryGroup: NodeSummaryGroup{
+			Label:   "Appliaction Pod",
+			Columns: []Column{},
+		},
+	},
 }
 
 func children(rc RenderContext, n report.Node) []NodeSummaryGroup {

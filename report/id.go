@@ -175,6 +175,12 @@ var (
 
 	// ParseStorageClassNodeID parses a storage class node ID
 	ParseStorageClassNodeID = parseSingleComponentID("storage_class")
+
+	// MakeApplicationPodNodeID produces a pod node ID having claim name from its composite parts.
+	MakeApplicationPodNodeID = makeSingleComponentID("application_pod")
+
+	// ParseApplicationPodNodeID parses a pod node ID having claim name
+	ParseApplicationPodNodeID = parseSingleComponentID("application_pod")
 )
 
 // makeSingleComponentID makes a single-component node id encoder

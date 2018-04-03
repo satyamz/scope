@@ -303,6 +303,10 @@ func (r *Reporter) Report() (report.Report, error) {
 	if err != nil {
 		return result, err
 	}
+	applicationPodTopology, _, err := r.applicationPodTopology()
+	if err != nil {
+		return result, err
+	}
 	result.Pod = result.Pod.Merge(podTopology)
 	result.Service = result.Service.Merge(serviceTopology)
 	result.Host = result.Host.Merge(hostTopology)
@@ -314,6 +318,7 @@ func (r *Reporter) Report() (report.Report, error) {
 	result.PersistentVolume = result.PersistentVolume.Merge(persistentVolumeTopology)
 	result.PersistentVolumeClaim = result.PersistentVolumeClaim.Merge(persistentVolumeClaimTopology)
 	result.StorageClass = result.StorageClass.Merge(storageClassTopology)
+	result.ApplicationPod = result.ApplicationPod.Merge(applicationPodTopology)
 	return result, nil
 }
 
@@ -460,6 +465,39 @@ func (r *Reporter) storageClassTopology() (report.Topology, []StorageClass, erro
 		return nil
 	})
 	return result, storageClasses, err
+}
+
+func (r *Reporter) applicationPodTopology() (report.Topology, []Pod, error) {
+	applicationPods := []Pod{}
+	result := report.MakeTopology().
+		WithMetadataTemplates(PodMetadataTemplates).
+		WithMetricTemplates(PodMetricTemplates).
+		WithTableTemplates(TableTemplates)
+	result.Controls.AddControl(report.Control{
+		ID:    GetLogs,
+		Human: "Get logs",
+		Icon:  "fa-desktop",
+		Rank:  0,
+	})
+	result.Controls.AddControl(report.Control{
+		ID:    DeletePod,
+		Human: "Delete",
+		Icon:  "fa-trash-o",
+		Rank:  1,
+	})
+	err := r.client.WalkApplicationPods(func(p Pod) error {
+		claimName, ok := p.GetNode(r.probeID).Latest.Lookup(VolumeClaim)
+		if ok != true {
+			return nil
+		}
+		if claimName != "" {
+			result.AddNode(p.GetNode(r.probeID))
+			applicationPods = append(applicationPods, p)
+			return nil
+		}
+		return nil
+	})
+	return result, applicationPods, err
 }
 
 type labelledChild interface {

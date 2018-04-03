@@ -114,6 +114,7 @@ var commonKeys = map[string]string{
 	PersistentVolume:      PersistentVolume,
 	PersistentVolumeClaim: PersistentVolumeClaim,
 	StorageClass:          StorageClass,
+	ApplicationPod:        ApplicationPod,
 
 	HostNodeID:             HostNodeID,
 	ControlProbeID:         ControlProbeID,
