@@ -31,6 +31,7 @@ const (
 	ReclaimPolicy      = report.KubernetesReclaimPolicy
 	Status             = report.KubernetesStatus
 	Message            = report.KubernetesMessage
+	VolumeName         = report.KubernetesVolumeName
 )
 
 // Exposed for testing
@@ -112,6 +113,14 @@ var (
 		AccessModes:      {ID: AccessModes, Label: "Access Modes", From: report.FromLatest, Priority: 5},
 		Status:           {ID: Status, Label: "Status", From: report.FromLatest, Priority: 6},
 		Message:          {ID: Message, Label: "Message", From: report.FromLatest, Priority: 7},
+	}
+
+	PersistentVolumeClaimMetadataTemplates = report.MetadataTemplates{
+		NodeType:    {ID: NodeType, Label: "Type", From: report.FromLatest, Priority: 1},
+		Namespace:   {ID: Namespace, Label: "Namespace", From: report.FromLatest, Priority: 2},
+		Status:      {ID: Status, Label: "Status", From: report.FromLatest, Priority: 3},
+		VolumeName:  {ID: VolumeName, Label: "Volume", From: report.FromLatest, Priority: 4},
+		AccessModes: {ID: AccessModes, Label: "Access Modes", From: report.FromLatest, Priority: 5},
 	}
 
 	TableTemplates = report.TableTemplates{
@@ -279,6 +288,10 @@ func (r *Reporter) Report() (report.Report, error) {
 	if err != nil {
 		return result, err
 	}
+	persistentVolumeClaimTopology, _, err := r.persistentVolumeClaimTopology()
+	if err != nil {
+		return result, err
+	}
 	result.Pod = result.Pod.Merge(podTopology)
 	result.Service = result.Service.Merge(serviceTopology)
 	result.Host = result.Host.Merge(hostTopology)
@@ -288,6 +301,7 @@ func (r *Reporter) Report() (report.Report, error) {
 	result.Deployment = result.Deployment.Merge(deploymentTopology)
 	result.Namespace = result.Namespace.Merge(namespaceTopology)
 	result.PersistentVolume = result.PersistentVolume.Merge(persistentVolumeTopology)
+	result.PersistentVolumeClaim = result.PersistentVolumeClaim.Merge(persistentVolumeClaimTopology)
 	return result, nil
 }
 
@@ -408,6 +422,19 @@ func (r *Reporter) persistentVolumeTopology() (report.Topology, []PersistentVolu
 		return nil
 	})
 	return result, persistentVolumes, err
+}
+
+func (r *Reporter) persistentVolumeClaimTopology() (report.Topology, []PersistentVolumeClaim, error) {
+	persistentVolumeClaims := []PersistentVolumeClaim{}
+	result := report.MakeTopology().
+		WithMetadataTemplates(PersistentVolumeClaimMetadataTemplates).
+		WithTableTemplates(TableTemplates)
+	err := r.client.WalkPersistentVolumeClaims(func(p PersistentVolumeClaim) error {
+		result.AddNode(p.GetNode(r.probeID))
+		persistentVolumeClaims = append(persistentVolumeClaims, p)
+		return nil
+	})
+	return result, persistentVolumeClaims, err
 }
 
 type labelledChild interface {

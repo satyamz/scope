@@ -192,6 +192,13 @@ var nodeSummaryGroupSpecs = []struct {
 			Columns: []Column{},
 		},
 	},
+	{
+		topologyID: report.PersistentVolumeClaim,
+		NodeSummaryGroup: NodeSummaryGroup{
+			Label:   "Persistent Volume Claims",
+			Columns: []Column{},
+		},
+	},
 }
 
 func children(rc RenderContext, n report.Node) []NodeSummaryGroup {
