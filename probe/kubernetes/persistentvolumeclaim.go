@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	// BetaStorageClassAnnotation is the annotation for default storage class
 	BetaStorageClassAnnotation = "volume.beta.kubernetes.io/storage-class"
 )
 
