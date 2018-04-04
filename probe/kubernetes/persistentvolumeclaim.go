@@ -8,6 +8,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+const (
+	BetaStorageClassAnnotation = "volume.beta.kubernetes.io/storage-class"
+)
+
 // PersistentVolumeClaim represents kubernetes PVC interface
 type PersistentVolumeClaim interface {
 	Meta
@@ -29,10 +33,16 @@ func NewPersistentVolumeClaim(p *apiv1.PersistentVolumeClaim) PersistentVolumeCl
 
 // GetStorageClass returns Storage class associated with given PVC
 func (p *persistentVolumeClaim) GetStorageClass() string {
-	storageClassName := ""
+
+	// Use Beta storage class annotation first
+	storageClassName := p.Annotations[BetaStorageClassAnnotation]
+	if storageClassName != "" {
+		return storageClassName
+	}
 	if p.Spec.StorageClassName != nil {
 		storageClassName = *p.Spec.StorageClassName
 	}
+
 	return storageClassName
 }
 
