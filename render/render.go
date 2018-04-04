@@ -251,14 +251,14 @@ func (ret *joinResults) rewriteAdjacency(outID string, adjacency report.IDList) 
 	ret.nodes[outID] = out
 }
 
-//storageAdjacency sets adjacency for the given node ID
+// storageAdjacency sets adjacency for the given node ID
 func (ret *joinResults) storageAdjacency(outID string, adjacency string) {
 	out := ret.nodes[outID]
 	out.Adjacency = out.Adjacency.Add(adjacency)
 	ret.nodes[outID] = out
 }
 
-//storageResult returns Nodes for after adding adjacencies 
+// storageResult returns Nodes for after adding adjacencies
 func (ret *joinResults) storageResult(input Nodes) Nodes {
 	for _, n := range input.Nodes {
 		outID, ok := ret.mapped[n.ID]
