@@ -23,10 +23,9 @@ var PersistentVolumeRenderer = Memoise(
 			report.PersistentVolumeClaim,
 			SelectStorageClass,
 		),
-		MapStorageEndpoints(
+		MapEndpoints(
 			Map2SC,
 			report.StorageClass,
-			"", // We only need to render storage class as it is!
 		)))
 
 // ConnectionStorageJoin returns connectionStorageJoin object
@@ -45,17 +44,17 @@ type connectionStorageJoin struct {
 func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
 	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes
 
-	var pvNodes = map[string]string{}
+	var pvNodes = map[string][]string{}
 	for _, n := range inputNodes {
 		pvcName := c.toPV(n)
-		pvNodes[pvcName] = n.ID
+		pvNodes[pvcName] = append(pvNodes[pvcName], n.ID)
 	}
 
 	return MapStorageEndpoints(
-		func(m report.Node) string {
+		func(m report.Node) []string {
 			pvcName, ok := m.Latest.Lookup(kubernetes.Name)
 			if !ok {
-				return ""
+				return []string{""}
 			}
 			id := pvNodes[pvcName]
 			return id
@@ -82,21 +81,23 @@ func MapPVC2SCName(m report.Node) string {
 
 // Map2SC returns pvc node ID
 func Map2SC(n report.Node) string {
-	if pvcNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeClaimNodeID(n.ID)); ok {
-		return pvcNodeID
+	if storageclassNodeID, ok := n.Latest.Lookup(report.MakeStorageClassNodeID(n.ID)); ok {
+		return storageclassNodeID
 	}
 	return ""
 }
 
+type storageEndpointMapFunc func(report.Node) []string
+
 // mapStorageEndpoints is the Renderer for rendering storage components together.
 type mapStorageEndpoints struct {
-	f        endpointMapFunc
+	f        storageEndpointMapFunc
 	topology string
 	selector TopologySelector
 }
 
 // MapStorageEndpoints instantiates mapStorageEndpoints and returns same
-func MapStorageEndpoints(f endpointMapFunc, topology string, selector TopologySelector) Renderer {
+func MapStorageEndpoints(f storageEndpointMapFunc, topology string, selector TopologySelector) Renderer {
 	return mapStorageEndpoints{f: f, topology: topology, selector: selector}
 }
 
@@ -106,8 +107,10 @@ func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 	ret := newJoinResults(TopologySelector(e.topology).Render(rpt).Nodes)
 
 	for _, n := range endpoints.Nodes {
-		if id := e.f(n); id != "" {
-			ret.addChild(n, id, e.topology)
+		if id := e.f(n); len(id) > 0 {
+			for _, nodeID := range id {
+				ret.addChild(n, nodeID, e.topology)
+			}
 		}
 	}
 	return ret.storageResult(endpoints)

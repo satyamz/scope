@@ -267,7 +267,7 @@ func (ret *joinResults) storageResult(input Nodes) Nodes {
 		}
 		ret.storageAdjacency(outID, n.ID)
 		for _, outID := range ret.multi[n.ID] {
-			ret.rewriteAdjacency(outID, n.Adjacency)
+			ret.storageAdjacency(outID, n.ID)
 		}
 	}
 	return Nodes{Nodes: ret.nodes}
