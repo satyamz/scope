@@ -157,6 +157,12 @@ var (
 
 	// ParseSwarmServiceNodeID parses a Swarm service node ID
 	ParseSwarmServiceNodeID = parseSingleComponentID("swarm_service")
+
+	// MakePersistentVolumeNodeID produces a Persistent Volume node ID from its composite parts.
+	MakePersistentVolumeNodeID = makeSingleComponentID("persistent_volume")
+
+	// ParsePersistentVolumeNodeID parses a Persistent Volume node ID
+	ParsePersistentVolumeNodeID = parseSingleComponentID("persistent_volume")
 )
 
 // makeSingleComponentID makes a single-component node id encoder

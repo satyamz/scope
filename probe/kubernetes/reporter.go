@@ -25,6 +25,12 @@ const (
 	NodeType           = report.KubernetesNodeType
 	Type               = report.KubernetesType
 	Ports              = report.KubernetesPorts
+	VolumeClaim        = report.KubernetesVolumeClaim
+	StorageClassName   = report.KubernetesStorageClassName
+	AccessModes        = report.KubernetesAccessModes
+	ReclaimPolicy      = report.KubernetesReclaimPolicy
+	Status             = report.KubernetesStatus
+	Message            = report.KubernetesMessage
 )
 
 // Exposed for testing
@@ -97,6 +103,16 @@ var (
 	}
 
 	CronJobMetricTemplates = PodMetricTemplates
+
+	PersistentVolumeMetadataTemplates = report.MetadataTemplates{
+		NodeType:         {ID: NodeType, Label: "Type", From: report.FromLatest, Priority: 1},
+		VolumeClaim:      {ID: VolumeClaim, Label: "Volume Claim", From: report.FromLatest, Priority: 2},
+		StorageClassName: {ID: StorageClassName, Label: "Storage Class", From: report.FromLatest, Priority: 3},
+		ReclaimPolicy:    {ID: ReclaimPolicy, Label: "Reclaim Policy", From: report.FromLatest, Priority: 4},
+		AccessModes:      {ID: AccessModes, Label: "Access Modes", From: report.FromLatest, Priority: 5},
+		Status:           {ID: Status, Label: "Status", From: report.FromLatest, Priority: 6},
+		Message:          {ID: Message, Label: "Message", From: report.FromLatest, Priority: 7},
+	}
 
 	TableTemplates = report.TableTemplates{
 		LabelPrefix: {
@@ -259,6 +275,10 @@ func (r *Reporter) Report() (report.Report, error) {
 	if err != nil {
 		return result, err
 	}
+	persistentVolumeTopology, _, err := r.persistentVolumeTopology()
+	if err != nil {
+		return result, err
+	}
 	result.Pod = result.Pod.Merge(podTopology)
 	result.Service = result.Service.Merge(serviceTopology)
 	result.Host = result.Host.Merge(hostTopology)
@@ -267,6 +287,7 @@ func (r *Reporter) Report() (report.Report, error) {
 	result.CronJob = result.CronJob.Merge(cronJobTopology)
 	result.Deployment = result.Deployment.Merge(deploymentTopology)
 	result.Namespace = result.Namespace.Merge(namespaceTopology)
+	result.PersistentVolume = result.PersistentVolume.Merge(persistentVolumeTopology)
 	return result, nil
 }
 
@@ -374,6 +395,19 @@ func (r *Reporter) cronJobTopology() (report.Topology, []CronJob, error) {
 		return nil
 	})
 	return result, cronJobs, err
+}
+
+func (r *Reporter) persistentVolumeTopology() (report.Topology, []PersistentVolume, error) {
+	persistentVolumes := []PersistentVolume{}
+	result := report.MakeTopology().
+		WithMetadataTemplates(PersistentVolumeMetadataTemplates).
+		WithTableTemplates(TableTemplates)
+	err := r.client.WalkPersistentVolumes(func(p PersistentVolume) error {
+		result.AddNode(p.GetNode(r.probeID))
+		persistentVolumes = append(persistentVolumes, p)
+		return nil
+	})
+	return result, persistentVolumes, err
 }
 
 type labelledChild interface {
