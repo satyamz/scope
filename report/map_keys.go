@@ -77,6 +77,7 @@ const (
 	KubernetesReclaimPolicy        = "kubernetes_reclaim_policy"
 	KubernetesStatus               = "kubernetes_status"
 	KubernetesMessage              = "kubernetes_message"
+	KubernetesVolumeName           = "kubernetes_volume_name"
 	// probe/awsecs
 	ECSCluster             = "ecs_cluster"
 	ECSCreatedAt           = "ecs_created_at"
@@ -93,23 +94,24 @@ const (
    getting clogged with values that are only used once.
 */
 var commonKeys = map[string]string{
-	Endpoint:         Endpoint,
-	Process:          Process,
-	Container:        Container,
-	Pod:              Pod,
-	Service:          Service,
-	Deployment:       Deployment,
-	ReplicaSet:       ReplicaSet,
-	DaemonSet:        DaemonSet,
-	StatefulSet:      StatefulSet,
-	CronJob:          CronJob,
-	ContainerImage:   ContainerImage,
-	Host:             Host,
-	Overlay:          Overlay,
-	ECSService:       ECSService,
-	ECSTask:          ECSTask,
-	SwarmService:     SwarmService,
-	PersistentVolume: PersistentVolume,
+	Endpoint:              Endpoint,
+	Process:               Process,
+	Container:             Container,
+	Pod:                   Pod,
+	Service:               Service,
+	Deployment:            Deployment,
+	ReplicaSet:            ReplicaSet,
+	DaemonSet:             DaemonSet,
+	StatefulSet:           StatefulSet,
+	CronJob:               CronJob,
+	ContainerImage:        ContainerImage,
+	Host:                  Host,
+	Overlay:               Overlay,
+	ECSService:            ECSService,
+	ECSTask:               ECSTask,
+	SwarmService:          SwarmService,
+	PersistentVolume:      PersistentVolume,
+	PersistentVolumeClaim: PersistentVolumeClaim,
 
 	HostNodeID:             HostNodeID,
 	ControlProbeID:         ControlProbeID,
