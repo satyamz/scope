@@ -58,7 +58,7 @@ func Map2PVName(m report.Node) string {
 	return pvName
 }
 
-// Map2SC returns pv node ID
+// Map2PVNode returns pv node ID
 func Map2PVNode(n report.Node) string {
 	if pvNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeNodeID(n.ID)); ok {
 		return pvNodeID
