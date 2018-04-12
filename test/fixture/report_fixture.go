@@ -352,14 +352,6 @@ var (
 					WithTopology(report.Service),
 			},
 		}.WithShape(report.Heptagon).WithLabel("service", "services"),
-		Sampling: report.Sampling{
-			Count: 1024,
-			Total: 4096,
-		},
-		Window: 2 * time.Second,
-	}
-	PVReport = report.Report{
-		ID: "test-pv-report",
 		PersistentVolumeClaim: report.Topology{
 			Nodes: report.Nodes{
 				PersistentVolumeClaimNodeID: report.MakeNodeWith(
@@ -368,7 +360,7 @@ var (
 						kubernetes.Name:             "pvc-6124",
 						kubernetes.Namespace:        "ping",
 						kubernetes.Status:           "bound",
-						kubernetes.VolumeName:       "pvc-6124",
+						kubernetes.VolumeName:       "pongvolume",
 						kubernetes.AccessModes:      "ReadWriteOnce",
 						kubernetes.StorageClassName: "standard",
 					}).
@@ -380,7 +372,7 @@ var (
 				PersistentVolumeNodeID: report.MakeNodeWith(
 
 					PersistentVolumeNodeID, map[string]string{
-						kubernetes.Name:             "pongservice",
+						kubernetes.Name:             "pongvolume",
 						kubernetes.Namespace:        "ping",
 						kubernetes.Status:           "bound",
 						kubernetes.VolumeClaim:      "pvc-6124",
@@ -390,14 +382,16 @@ var (
 					WithTopology(report.PersistentVolume),
 			},
 		}.WithShape(report.Cylinder).WithLabel("persistent volume", "persistent volumes"),
+		Sampling: report.Sampling{
+			Count: 1024,
+			Total: 4096,
+		},
+		Window: 2 * time.Second,
 	}
 )
 
 func init() {
 	if err := Report.Validate(); err != nil {
-		panic(err)
-	}
-	if err := PVReport.Validate(); err != nil {
 		panic(err)
 	}
 }

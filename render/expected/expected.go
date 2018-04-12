@@ -329,22 +329,22 @@ var (
 	}
 
 	RenderedPersistentVolume = report.Nodes{
-		fixture.PersistentVolumeNodeID: persistentVolume(fixture.PersistentVolumeNodeID, fixture.PersistentVolumeClaimNodeID).
-			WithLatests(map[string]string{
-				kubernetes.Name:             "pongservice",
-				kubernetes.Namespace:        "ping",
-				kubernetes.Status:           "bound",
-				kubernetes.VolumeClaim:      "pvc-6124",
-				kubernetes.AccessModes:      "ReadWriteOnce",
-				kubernetes.StorageClassName: "standard",
-			}).WithChild(report.MakeNode(fixture.PersistentVolumeClaimNodeID).WithTopology(report.PersistentVolumeClaim)),
-
-		fixture.PersistentVolumeClaimNodeID: persistentVolumeClaim(fixture.PersistentVolumeClaimNodeID).
+		fixture.PersistentVolumeClaimNodeID: persistentVolumeClaim(fixture.PersistentVolumeClaimNodeID, fixture.PersistentVolumeNodeID).
 			WithLatests(map[string]string{
 				kubernetes.Name:             "pvc-6124",
 				kubernetes.Namespace:        "ping",
 				kubernetes.Status:           "bound",
-				kubernetes.VolumeName:       "pongservice",
+				kubernetes.VolumeName:       "pongvolume",
+				kubernetes.AccessModes:      "ReadWriteOnce",
+				kubernetes.StorageClassName: "standard",
+			}).WithChild(report.MakeNode(fixture.PersistentVolumeNodeID).WithTopology(report.PersistentVolume)),
+
+		fixture.PersistentVolumeNodeID: persistentVolume(fixture.PersistentVolumeNodeID).
+			WithLatests(map[string]string{
+				kubernetes.Name:             "pongvolume",
+				kubernetes.Namespace:        "ping",
+				kubernetes.Status:           "bound",
+				kubernetes.VolumeClaim:      "pvc-6124",
 				kubernetes.AccessModes:      "ReadWriteOnce",
 				kubernetes.StorageClassName: "standard",
 			}),

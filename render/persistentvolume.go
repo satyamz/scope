@@ -9,18 +9,17 @@ import (
 var PersistentVolumeRenderer = Memoise(
 	MakeReduce(
 		ConnectionStorageJoin(
-			Map2PVCName,
-			report.PersistentVolume,
-			SelectPersistentVolumeClaim,
-		),
-		MapEndpoints(
-			Map2SC,
+			Map2PVName,
 			report.PersistentVolumeClaim,
+		),
+		MapStorageEndpoints(
+			Map2PVNode,
+			report.PersistentVolume,
 		)))
 
 // ConnectionStorageJoin returns connectionStorageJoin object
-func ConnectionStorageJoin(toPV func(report.Node) string, topology string, selector TopologySelector) Renderer {
-	return connectionStorageJoin{toPV: toPV, topology: topology, selector: selector}
+func ConnectionStorageJoin(toPV func(report.Node) string, topology string) Renderer {
+	return connectionStorageJoin{toPV: toPV, topology: topology}
 }
 
 // connectionStorageJoin holds the information about mapping of storage components
@@ -28,42 +27,41 @@ func ConnectionStorageJoin(toPV func(report.Node) string, topology string, selec
 type connectionStorageJoin struct {
 	toPV     func(report.Node) string
 	topology string
-	selector TopologySelector
 }
 
 func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
 	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes
 
-	var pvNodes = map[string]string{}
+	var pvcNodes = map[string]string{}
 	for _, n := range inputNodes {
-		pvcName := c.toPV(n)
-		pvNodes[pvcName] = n.ID
+		pvName := c.toPV(n)
+		pvcNodes[pvName] = n.ID
 	}
 
 	return MapStorageEndpoints(
 		func(m report.Node) string {
-			pvcName, ok := m.Latest.Lookup(kubernetes.Name)
+			pvName, ok := m.Latest.Lookup(kubernetes.Name)
 			if !ok {
 				return ""
 			}
-			id := pvNodes[pvcName]
+			id := pvcNodes[pvName]
 			return id
-		}, c.topology, c.selector).Render(rpt)
+		}, c.topology).Render(rpt)
 }
 
-// Map2PVCName returns PVC name for the given Pod.
-func Map2PVCName(m report.Node) string {
-	pvcName, ok := m.Latest.Lookup(kubernetes.VolumeClaim)
+// Map2PVName accepts PVC Node and returns Volume name associated with PVC Node.
+func Map2PVName(m report.Node) string {
+	pvName, ok := m.Latest.Lookup(kubernetes.VolumeName)
 	if !ok {
-		pvcName = ""
+		pvName = ""
 	}
-	return pvcName
+	return pvName
 }
 
-// Map2SC returns pvc node ID
-func Map2SC(n report.Node) string {
-	if pvcNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeClaimNodeID(n.ID)); ok {
-		return pvcNodeID
+// Map2SC returns pv node ID
+func Map2PVNode(n report.Node) string {
+	if pvNodeID, ok := n.Latest.Lookup(report.MakePersistentVolumeNodeID(n.ID)); ok {
+		return pvNodeID
 	}
 	return ""
 }
@@ -72,17 +70,19 @@ func Map2SC(n report.Node) string {
 type mapStorageEndpoints struct {
 	f        endpointMapFunc
 	topology string
-	selector TopologySelector
 }
 
 // MapStorageEndpoints instantiates mapStorageEndpoints and returns same
-func MapStorageEndpoints(f endpointMapFunc, topology string, selector TopologySelector) Renderer {
-	return mapStorageEndpoints{f: f, topology: topology, selector: selector}
+func MapStorageEndpoints(f endpointMapFunc, topology string) Renderer {
+	return mapStorageEndpoints{f: f, topology: topology}
 }
 
 func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 
-	endpoints := e.selector.Render(rpt)
+	var endpoints Nodes
+	if e.topology == "persistent_volume_claim" {
+		endpoints = SelectPersistentVolume.Render(rpt)
+	}
 	ret := newJoinResults(TopologySelector(e.topology).Render(rpt).Nodes)
 
 	for _, n := range endpoints.Nodes {

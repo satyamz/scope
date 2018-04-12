@@ -12,7 +12,7 @@ import (
 )
 
 func TestPersistentVolumeRenderer(t *testing.T) {
-	have := utils.Prune(render.PersistentVolumeRenderer.Render(fixture.PVReport).Nodes)
+	have := utils.Prune(render.PersistentVolumeRenderer.Render(fixture.Report).Nodes)
 	want := utils.Prune(expected.RenderedPersistentVolume)
 	if !reflect.DeepEqual(want, have) {
 		t.Error(test.Diff(want, have))
