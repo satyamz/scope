@@ -348,6 +348,21 @@ var (
 				kubernetes.AccessModes:      "ReadWriteOnce",
 				kubernetes.StorageClassName: "standard",
 			}),
+		fixture.ClientPodNodeID: pod(fixture.ClientPodNodeID, fixture.ServerPodNodeID, fixture.PersistentVolumeClaimNodeID).
+			WithChildren(report.MakeNodeSet(
+				RenderedEndpoints[fixture.Client54001NodeID],
+				RenderedEndpoints[fixture.Client54002NodeID],
+				RenderedProcesses[fixture.ClientProcess1NodeID],
+				RenderedProcesses[fixture.ClientProcess2NodeID],
+				RenderedContainers[fixture.ClientContainerNodeID],
+			)).WithChild(report.MakeNode(fixture.PersistentVolumeClaimNodeID).WithTopology(report.PersistentVolumeClaim)),
+
+		fixture.ServerPodNodeID: pod(fixture.ServerPodNodeID).
+			WithChildren(report.MakeNodeSet(
+				RenderedEndpoints[fixture.Server80NodeID],
+				RenderedProcesses[fixture.ServerProcessNodeID],
+				RenderedContainers[fixture.ServerContainerNodeID],
+			)),
 	}
 )
 

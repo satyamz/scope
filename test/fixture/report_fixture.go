@@ -319,9 +319,10 @@ var (
 			Nodes: report.Nodes{
 				ClientPodNodeID: report.MakeNodeWith(
 					ClientPodNodeID, map[string]string{
-						kubernetes.Name:      "pong-a",
-						kubernetes.Namespace: KubernetesNamespace,
-						report.HostNodeID:    ClientHostNodeID,
+						kubernetes.Name:        "pong-a",
+						kubernetes.Namespace:   KubernetesNamespace,
+						report.HostNodeID:      ClientHostNodeID,
+						kubernetes.VolumeClaim: "pvc-6124",
 					}).
 					WithTopology(report.Pod).WithParents(report.MakeSets().
 					Add("host", report.MakeStringSet(ClientHostNodeID)).
