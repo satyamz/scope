@@ -189,6 +189,9 @@ type Report struct {
 	// must be equal, but we don't require that equal reports have
 	// the same id.
 	ID string `deepequal:"skip"`
+
+	// VolumeInfo has volume name
+	VolumeInfo VolumeRecord
 }
 
 // MakeReport makes a clean report, ready to Merge() other reports into.

@@ -79,6 +79,11 @@ func MakeECSServiceNodeID(cluster, serviceName string) string {
 	return cluster + ScopeDelim + serviceName
 }
 
+// MakeVolumeNodeID produces an volume node ID from its volumename.
+func MakeVolumeNodeID(hostID, namespaceID, volumeName, volumeClaim string) string {
+	return hostID + namespaceID + ScopeDelim + volumeName + ScopeDelim + volumeClaim
+}
+
 var (
 	// MakeHostNodeID produces a host node ID from its composite parts.
 	MakeHostNodeID = makeSingleComponentID("host")
