@@ -31,5 +31,4 @@ export const octagonShapeProps = { d: curvedUnitPolygonPath(8) };
 export const cloudShapeProps = { d: UNIT_CLOUD_PATH };
 export const cylinderShapeProps = { d: UNIT_CYLINDER_PATH };
 export const dottedCylinderShapeProps = { d: UNIT_CYLINDER_PATH };
-export const cloudShapeProps = { d: UNIT_CLOUD_PATH };
 export const sheetShapeProps = { d: SHEET };
