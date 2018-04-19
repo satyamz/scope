@@ -3,17 +3,16 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import { enterEdge, leaveEdge } from '../actions/app-actions';
-import { decodeIdAttribute } from '../utils/dom-utils';
+import { encodeIdAttribute, decodeIdAttribute } from '../utils/dom-utils';
 
 
-function callFlag(id) {
+function getAdjacencyClass(id) {
   const topologyId = id.split('---');
   const from = topologyId[0].split(';');
   const to = topologyId[1].split(';');
   if (from[1] !== undefined && to[1] !== undefined) {
     from[1] = from[1].slice(1, -1);
     to[1] = to[1].slice(1, -1);
-    console.log(from[1]);
     if ((from[1] === 'persistent_volume' || from[1] === 'storage_class' || from[1] === 'persistent_volume_claim') || (to[1] === 'persistent_volume' || to[1] === 'storage_class' || to[1] === 'persistent_volume_claim')) {
       return 'link-storage';
     }
@@ -29,21 +28,20 @@ class Edge extends React.Component {
 
   render() {
     const {
-      id, path, highlighted, focused, thickness, source, target,
+      id, path, highlighted, focused, thickness, source, target
     } = this.props;
     const shouldRenderMarker = (focused || highlighted) && (source !== target);
     const className = classNames('edge', { highlighted });
-    console.log(path);
     return (
       <g
-        id={decodeIdAttribute(id)}
+        id={encodeIdAttribute(id)}
         className={className}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
         <path className="shadow" d={path} style={{ strokeWidth: 10 * thickness }} />
         <path
-          className={callFlag(id)}
+          className={getAdjacencyClass(id)}
           d={path}
           style={{ strokeWidth: 5 }}
         />
