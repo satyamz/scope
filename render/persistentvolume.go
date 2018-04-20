@@ -180,7 +180,6 @@ func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 			}
 		}
 		return ret.storageResult(endpoints)
-	} else {
-		return ret.storageResult(endpoints)
 	}
+	return ret.storageResult(endpoints)
 }
