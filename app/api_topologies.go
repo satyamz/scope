@@ -35,7 +35,6 @@ const (
 	ecsTasksID             = "ecs-tasks"
 	ecsServicesID          = "ecs-services"
 	swarmServicesID        = "swarm-services"
-	persistentVolumesID    = "persistent-volumes"
 )
 
 var (
