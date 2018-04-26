@@ -82,13 +82,14 @@ func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 	var endpoints Nodes
 	if e.topology == "persistent_volume_claim" {
 		endpoints = SelectPersistentVolume.Render(rpt)
-	}
-	ret := newJoinResults(TopologySelector(e.topology).Render(rpt).Nodes)
-
-	for _, n := range endpoints.Nodes {
-		if id := e.f(n); id != "" {
-			ret.addChild(n, id, e.topology)
+		for _, n := range endpoints.Nodes {
+			if id := e.f(n); id != "" {
+				rpt.PersistentVolume.AddNode(n.WithAdjacent(id))
+			}
 		}
 	}
-	return ret.storageResult(endpoints)
+	if e.topology == "persistent_volume" {
+		endpoints = SelectPersistentVolumeClaim.Render(rpt)
+	}
+	return endpoints
 }
