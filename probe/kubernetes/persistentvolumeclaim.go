@@ -19,6 +19,7 @@ type PersistentVolumeClaim interface {
 	Selector() (labels.Selector, error)
 	GetNode(probeID string) report.Node
 	GetStorageClass() string
+	GetVolumeName() string
 }
 
 // persistentVolumeClaim represents kubernetes Persistent Volume Claims
@@ -47,13 +48,17 @@ func (p *persistentVolumeClaim) GetStorageClass() string {
 	return storageClassName
 }
 
+func (p *persistentVolumeClaim) GetVolumeName() string {
+	return p.Spec.VolumeName
+}
+
 // GetNode returns Persistent Volume Claim as Node
 func (p *persistentVolumeClaim) GetNode(probeID string) report.Node {
 	return p.MetaNode(report.MakePersistentVolumeClaimNodeID(p.UID())).WithLatests(map[string]string{
 		report.ControlProbeID: probeID,
 		NodeType:              "Persistent Volume Claim",
 		Status:                string(p.Status.Phase),
-		VolumeName:            p.Spec.VolumeName,
+		VolumeName:            p.GetVolumeName(),
 		AccessModes:           string(p.Spec.AccessModes[0]),
 		StorageClassName:      p.GetStorageClass(),
 	})

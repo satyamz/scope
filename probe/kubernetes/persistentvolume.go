@@ -24,7 +24,7 @@ func NewPersistentVolume(p *apiv1.PersistentVolume) PersistentVolume {
 
 // GetNode returns Persistent Volume as Node
 func (p *persistentVolume) GetNode(probeID string) report.Node {
-	return p.MetaNode(report.MakePersistentVolumeNodeID(p.UID())).WithLatests(map[string]string{
+	return p.MetaNode(report.MakePersistentVolumeNodeID(p.GetName())).WithLatests(map[string]string{
 		report.ControlProbeID: probeID,
 		NodeType:              "Persistent Volume",
 		VolumeClaim:           p.Spec.ClaimRef.Name,

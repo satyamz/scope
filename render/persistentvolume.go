@@ -1,6 +1,8 @@
 package render
 
 import (
+	"fmt"
+
 	"github.com/weaveworks/scope/probe/kubernetes"
 	"github.com/weaveworks/scope/report"
 )
@@ -8,14 +10,9 @@ import (
 // PersistentVolumeRenderer is the common renderer for all the storage components.
 var PersistentVolumeRenderer = Memoise(
 	MakeReduce(
-		ConnectionStorageJoin(
-			Map2PVName,
-			report.PersistentVolumeClaim,
-		),
-		MapStorageEndpoints(
-			Map2PVNode,
-			report.PersistentVolume,
-		)))
+		SelectPersistentVolumeClaim,
+		SelectPersistentVolume,
+	))
 
 // ConnectionStorageJoin returns connectionStorageJoin object
 func ConnectionStorageJoin(toPV func(report.Node) string, topology string) Renderer {
@@ -30,10 +27,12 @@ type connectionStorageJoin struct {
 }
 
 func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
-	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes
+	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes //pvc nodes
 
 	var pvcNodes = map[string]string{}
 	for _, n := range inputNodes {
+		fmt.Printf("===> PVC Node %+v\n <===", n)
+
 		pvName := c.toPV(n)
 		pvcNodes[pvName] = n.ID
 	}
@@ -83,12 +82,13 @@ func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 	if e.topology == "persistent_volume_claim" {
 		endpoints = SelectPersistentVolume.Render(rpt)
 	}
-	ret := newJoinResults(TopologySelector(e.topology).Render(rpt).Nodes)
+	// ret := newJoinResults(TopologySelector(e.topology).Render(rpt).Nodes)
 
-	for _, n := range endpoints.Nodes {
-		if id := e.f(n); id != "" {
-			ret.addChild(n, id, e.topology)
-		}
-	}
-	return ret.storageResult(endpoints)
+	// for _, n := range endpoints.Nodes {
+	// 	if id := e.f(n); id != "" {
+	// 		fmt.Printf("--> PV Node  %+v\n <---", n)
+	// 		ret.addChild(n, id, e.topology)
+	// 	}
+	// }
+	return endpoints
 }

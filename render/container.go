@@ -260,7 +260,6 @@ func MapProcess2Container(n report.Node) report.Nodes {
 	if n.Topology == Pseudo {
 		return report.Nodes{n.ID: n}
 	}
-
 	// Otherwise, if the process is not in a container, group it into
 	// a per-host "Uncontained" node.
 	var (
@@ -337,7 +336,6 @@ func MapContainer2Hostname(n report.Node) report.Nodes {
 	if n.Topology == Pseudo {
 		return report.Nodes{n.ID: n}
 	}
-
 	// Otherwise, if some some reason the container doesn't have a hostname
 	// (maybe slightly out of sync reports), just drop it
 	id, ok := n.Latest.Lookup(docker.ContainerHostname)

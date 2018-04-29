@@ -430,7 +430,7 @@ func (r *Reporter) persistentVolumeClaimTopology() (report.Topology, []Persisten
 		WithMetadataTemplates(PersistentVolumeClaimMetadataTemplates).
 		WithTableTemplates(TableTemplates)
 	err := r.client.WalkPersistentVolumeClaims(func(p PersistentVolumeClaim) error {
-		result.AddNode(p.GetNode(r.probeID))
+		result.AddNode(p.GetNode(r.probeID).WithAdjacent(p.GetVolumeName() + ";<persistent_volume>"))
 		persistentVolumeClaims = append(persistentVolumeClaims, p)
 		return nil
 	})

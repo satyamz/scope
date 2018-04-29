@@ -87,7 +87,7 @@ func (r Reduce) Render(rpt report.Report) Nodes {
 // Nodes produced by another Renderer.
 type Map struct {
 	MapFunc
-	Renderer
+	Renderer //PersistentVolume Selector
 }
 
 // MakeMap makes a new Map
@@ -99,7 +99,7 @@ func MakeMap(f MapFunc, r Renderer) Renderer {
 // using a map function
 func (m Map) Render(rpt report.Report) Nodes {
 	var (
-		input       = m.Renderer.Render(rpt)
+		input       = m.Renderer.Render(rpt) // PV nodes
 		output      = report.Nodes{}
 		mapped      = map[string]report.IDList{} // input node ID -> output node IDs
 		adjacencies = map[string]report.IDList{} // output node ID -> input node Adjacencies
@@ -225,8 +225,8 @@ func (ret *joinResults) passThrough(n report.Node) {
 // Rewrite Adjacency of nodes in ret mapped from original nodes in
 // input, and return the result.
 func (ret *joinResults) result(input Nodes) Nodes {
-	for _, n := range input.Nodes {
-		outID, ok := ret.mapped[n.ID]
+	for _, n := range input.Nodes { // input.Nodes => pvc nodes
+		outID, ok := ret.mapped[n.ID] // n is pvc node, outID is pv node
 		if !ok {
 			continue
 		}
