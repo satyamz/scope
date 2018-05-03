@@ -100,9 +100,9 @@ var primaryAPITopology = map[string]string{
 	report.ECSService:            "ecs-services",
 	report.SwarmService:          "swarm-services",
 	report.Host:                  "hosts",
-	report.PersistentVolume:      "persistent-volumes",
-	report.PersistentVolumeClaim: "persistent-volumes",
-	report.StorageClass:          "persistent-volumes",
+	report.PersistentVolume:      "pods",
+	report.PersistentVolumeClaim: "pods",
+	report.StorageClass:          "pods",
 }
 
 // MakeBasicNodeSummary returns a basic summary of a node, if
