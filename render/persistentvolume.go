@@ -20,21 +20,21 @@ type connectionStorageJoin struct {
 func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
 	inputNodes := TopologySelector(c.topology).Render(rpt).Nodes
 
-	var pvcNodes = map[string][]string{}
+	var storageNodes = map[string][]string{}
 	for _, n := range inputNodes {
-		pvName := c.toPV(n)
-		for _, name := range pvName {
-			pvcNodes[name] = append(pvcNodes[name], n.ID)
+		storageName := c.toPV(n)
+		for _, name := range storageName {
+			storageNodes[name] = append(storageNodes[name], n.ID)
 		}
 	}
 
 	return MapStorageEndpoints(
 		func(m report.Node) []string {
-			pvName, ok := m.Latest.Lookup(kubernetes.Name)
+			storageName, ok := m.Latest.Lookup(kubernetes.Name)
 			if !ok {
 				return []string{""}
 			}
-			id := pvcNodes[pvName]
+			id := storageNodes[storageName]
 			return id
 		}, c.topology).Render(rpt)
 }
