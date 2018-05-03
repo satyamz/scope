@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import { enterEdge, leaveEdge } from '../actions/app-actions';
-import { decodeIdAttribute } from '../utils/dom-utils';
+import { encodeIdAttribute, decodeIdAttribute } from '../utils/dom-utils';
 
 
-function callFlag(id) {
+function getAdjacencyClass(id) {
   const topologyId = id.split('---');
   const from = topologyId[0].split(';');
   const to = topologyId[1].split(';');
@@ -28,20 +28,20 @@ class Edge extends React.Component {
 
   render() {
     const {
-      id, path, highlighted, focused, thickness, source, target,
+      id, path, highlighted, focused, thickness, source, target
     } = this.props;
     const shouldRenderMarker = (focused || highlighted) && (source !== target);
     const className = classNames('edge', { highlighted });
     return (
       <g
-        id={decodeIdAttribute(id)}
+        id={encodeIdAttribute(id)}
         className={className}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
         <path className="shadow" d={path} style={{ strokeWidth: 10 * thickness }} />
         <path
-          className={callFlag(id)}
+          className={getAdjacencyClass(id)}
           d={path}
           style={{ strokeWidth: 5 }}
         />
