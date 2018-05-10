@@ -6,15 +6,15 @@ import (
 )
 
 // ConnectionStorageJoin returns connectionStorageJoin object
-func ConnectionStorageJoin(toPV func(report.Node) []string, topology string) Renderer {
-	return connectionStorageJoin{toPV: toPV, topology: topology}
+func ConnectionStorageJoin(toStorageResource func(report.Node) []string, topology string) Renderer {
+	return connectionStorageJoin{toStorageResource: toStorageResource, topology: topology}
 }
 
 // connectionStorageJoin holds the information about mapping of storage components
 // along with TopologySelector
 type connectionStorageJoin struct {
-	toPV     func(report.Node) []string
-	topology string
+	toStorageResource func(report.Node) []string
+	topology          string
 }
 
 func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
@@ -22,7 +22,7 @@ func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
 
 	var storageNodes = map[string][]string{}
 	for _, n := range inputNodes {
-		storageName := c.toPV(n)
+		storageName := c.toStorageResource(n)
 		for _, name := range storageName {
 			storageNodes[name] = append(storageNodes[name], n.ID)
 		}
@@ -30,11 +30,11 @@ func (c connectionStorageJoin) Render(rpt report.Report) Nodes {
 
 	return MapStorageEndpoints(
 		func(m report.Node) []string {
-			storageName, ok := m.Latest.Lookup(kubernetes.Name)
+			storageComponentName, ok := m.Latest.Lookup(kubernetes.Name)
 			if !ok {
 				return []string{""}
 			}
-			id := storageNodes[storageName]
+			id := storageNodes[storageComponentName]
 			return id
 		}, c.topology).Render(rpt)
 }
@@ -86,7 +86,6 @@ func (e mapStorageEndpoints) Render(rpt report.Report) Nodes {
 	var endpoints Nodes
 	if e.topology == report.PersistentVolumeClaim {
 		endpoints = SelectPersistentVolume.Render(rpt)
-		endpoints.Merge(SelectStorageClass.Render(rpt))
 	}
 	if e.topology == report.Pod {
 		endpoints = SelectPersistentVolumeClaim.Render(rpt)
