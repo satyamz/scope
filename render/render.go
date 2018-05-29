@@ -251,27 +251,72 @@ func (ret *joinResults) rewriteAdjacency(outID string, adjacency report.IDList) 
 	ret.nodes[outID] = out
 }
 
-// storageAdjacency sets adjacency for the given node ID
-func (ret *joinResults) storageAdjacency(outID string, adjacency string) {
-	out := ret.nodes[outID]
-	out.Adjacency = out.Adjacency.Add(adjacency)
-	ret.nodes[outID] = out
+// joinVolumeResults is used by Kubernetes Volume Renderers that join sets of nodes
+type joinVolumeResults struct {
+	nodes  report.Nodes
+	mapped map[string]string   // input node ID -> output node ID - common case
+	multi  map[string][]string // input node ID -> output node IDs - exceptional case
 }
 
-// storageResult returns Nodes for after adding adjacencies
-func (ret *joinResults) storageResult(input Nodes) Nodes {
+func newjoinVolumeResults(inputNodes report.Nodes) joinVolumeResults {
+	nodes := make(report.Nodes, len(inputNodes))
+	for id, n := range inputNodes {
+		n.Adjacency = nil // result() assumes all nodes start with no adjacencies
+		nodes[id] = n
+	}
+	return joinVolumeResults{nodes: nodes, mapped: map[string]string{}, multi: map[string][]string{}}
+}
+
+func (res *joinVolumeResults) mapChild(from, to string) {
+	if _, ok := res.mapped[from]; !ok {
+		res.mapped[from] = to
+	} else {
+		res.multi[from] = append(res.multi[from], to)
+	}
+}
+
+// Add m as a child of the node at id, creating a new result node in
+// the specified topology if not already there.
+func (res *joinVolumeResults) addUnmappedChild(m report.Node, id string, topology string) {
+	result, exists := res.nodes[id]
+	if !exists {
+		result = report.MakeNode(id).WithTopology(topology)
+	}
+	result.Children = result.Children.Add(m)
+	result.Counters = result.Counters.Add(m.Topology, 1)
+	res.nodes[id] = result
+}
+
+// Add m as a child of the node at id, creating a new result node in
+// the specified topology if not already there, and updating the
+// mapping from old ID to new ID.
+func (res *joinVolumeResults) addChild(m report.Node, id string, topology string) {
+	res.addUnmappedChild(m, id, topology)
+	res.mapChild(m.ID, id)
+}
+
+// addAdjacency sets adjacency for the given node ID
+func (res *joinVolumeResults) addAdjacency(outID string, adjacency string) {
+	out := res.nodes[outID]
+	out.Adjacency = out.Adjacency.Add(adjacency)
+	res.nodes[outID] = out
+}
+
+// result returns Nodes for after adding adjacencies
+func (res *joinVolumeResults) result(input Nodes) Nodes {
 	for _, n := range input.Nodes {
-		outID, ok := ret.mapped[n.ID]
+		outID, ok := res.mapped[n.ID]
 		if !ok {
 			continue
 		}
-		// Since PV and PVC will have only single adjacency
-		ret.storageAdjacency(outID, n.ID)
-		for _, outID := range ret.multi[n.ID] {
-			ret.storageAdjacency(outID, n.ID)
+		// Pass the Node IDs as both will be Kubernetes resources
+		// and there's no reference node such as EndPoint
+		res.addAdjacency(outID, n.ID)
+		for _, outID := range res.multi[n.ID] {
+			res.addAdjacency(outID, n.ID)
 		}
 	}
-	return Nodes{Nodes: ret.nodes}
+	return Nodes{Nodes: res.nodes}
 }
 
 // ResetCache blows away the rendered node cache, and known service
