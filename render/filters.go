@@ -80,10 +80,8 @@ func (f FilterFunc) Transform(nodes Nodes) Nodes {
 				newAdjacency = newAdjacency.Add(dstID)
 			}
 		}
-		claimName, ok := node.Latest.Lookup(kubernetes.VolumeClaim)
-		if claimName == "" || !ok {
-			node.Adjacency = newAdjacency
-		}
+
+		node.Adjacency = newAdjacency
 		output[id] = node
 	}
 

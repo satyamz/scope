@@ -52,7 +52,6 @@ var PodRenderer = Memoise(ConditionalRenderer(renderKubernetesTopologies,
 			return !ok || !(state == kubernetes.StateDeleted || state == kubernetes.StateFailed)
 		},
 		MakeReduce(
-			PVRenderer,
 			PropagateSingleMetrics(report.Container,
 				MakeMap(
 					Map2Parent([]string{report.Pod}, UnmanagedID),
@@ -66,6 +65,7 @@ var PodRenderer = Memoise(ConditionalRenderer(renderKubernetesTopologies,
 				),
 			),
 			ConnectionJoin(MapPod2IP, report.Pod),
+			KubernetesVolumesRenderer,
 		),
 	),
 ))
